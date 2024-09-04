@@ -1,2 +1,2 @@
 # either
-複数クライアントで同時入力できるフォーム・エディタを提供するライブラリ
+WYSIWYG editor for simultaneous input by multiple clients

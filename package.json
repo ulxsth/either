@@ -1,0 +1,19 @@
+{
+  "name": "either-wysiwyg",
+  "version": "0.1.1",
+  "description": "WYSIWYG editor for simultaneous input by multiple clients",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ulxsth/either.git"
+  },
+  "author": "nemurusleepy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ulxsth/either/issues"
+  },
+  "homepage": "https://github.com/ulxsth/either#readme"
+}
