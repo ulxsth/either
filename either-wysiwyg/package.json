@@ -2,8 +2,11 @@
   "name": "@nemurusleepy/either-wysiwyg",
   "version": "0.1.0",
   "description": "WYSIWYG editor for simultaneous input by multiple clients",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
