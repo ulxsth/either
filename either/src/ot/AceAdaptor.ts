@@ -1,6 +1,6 @@
 import { TextOperation } from "./TextOperation";
 
-class AceAdapter {
+export class AceAdapter {
   constructor(public editor: AceAjax.Editor) {
     editor.on("change", this.onChange);
   }

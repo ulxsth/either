@@ -12,6 +12,6 @@
   "description": "",
   "dependencies": {
     "typescript": "^5.5.4",
-    "@nemurusleepy/either-wysiwyg": "file:../either-wysiwyg"
+    "@nemurusleepy/either": "file:../either"
   }
 }
