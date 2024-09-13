@@ -1,7 +1,7 @@
 {
-  "name": "@nemurusleepy/either-wysiwyg",
+  "name": "@nemurusleepy/either",
   "version": "0.1.0",
-  "description": "WYSIWYG editor for simultaneous input by multiple clients",
+  "description": "editor for simultaneous input by multiple clients",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
