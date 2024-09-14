@@ -4,7 +4,7 @@ import { createServer } from 'http'
 import { EditorSocketIOServer } from '@nemurusleepy/either'
 
 const app = express()
-app.use(express.static('public'))
+app.use(express.static('dist/public'))
 
 const server = createServer(app)
 const io = new Server(server)
@@ -15,6 +15,10 @@ app.get("/", (req, res) => {
   return express.static('public/index.html')
 })
 
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+})
 
 io.on("connection", (socket) => {
   console.log("A user connected: ", socket.id)
@@ -24,6 +28,7 @@ io.on("connection", (socket) => {
 const port = 3000
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)
+
 }).on('error', (err) => {
   throw new Error(err.message)
 })

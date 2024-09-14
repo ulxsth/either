@@ -1,4 +1,7 @@
-const editor = ace.edit("editor");
+import io from "socket.io-client";
+import Ace from "ace-builds";
+
+const editor = Ace.edit("editor");
 editor.setTheme("ace/theme/chrome");
 editor.session.setMode("ace/mode/markdown");
 
