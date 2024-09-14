@@ -18,7 +18,9 @@ export class EditorSocketIOServer {
     socket.on("disconnect", () => this.onDisconnect(socket))
   }
 
-  public onOperation(socket: Socket) { }
+  public onOperation(socket: Socket) {
+    
+   }
   public onDisconnect(socket: Socket) {
     console.log("A user disconnected: ", socket.id);
 
