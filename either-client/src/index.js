@@ -40,9 +40,9 @@ export class AceAdapter {
     socket.on("change", (data) => {
       console.log(data);
       const { delta, revision: receiveRevision } = data;
-      if (this.revision === receiveRevision) {
-        const latestDelta = this.deltas.pop()
-        console.log(`conflict detected: ${latestDelta} / ${delta}`);
+      const latestDelta = this.deltas.pop()
+      if (latestDelta && this.revision === receiveRevision) {
+        console.log(`conflict detected: ${latestDelta.action} / ${delta.action}`);
         const [delta1, delta2] = this.transform(delta, latestDelta);
         if (delta1) {
           this.applyDeltas([delta1]);

@@ -17,7 +17,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "@nemurusleepy/either": "^1.0.2",
+    "@nemurusleepy/either": "^1.0.3",
     "express": "^4.21.0",
     "path": "^0.12.7",
     "socket.io": "^4.7.5"
