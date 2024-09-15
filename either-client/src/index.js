@@ -56,6 +56,7 @@ export class AceAdapter {
     });
 
     socket.on("ack", (_) => {
+      console.log("ack: ", this.revision);
       this.revision++;
     })
   }
