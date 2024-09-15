@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 
-class AceAdapter {
+export class AceAdapter {
   public revision: number;
   public isSystemChange: boolean;
   public deltas: AceAjax.Delta[];
