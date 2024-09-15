@@ -131,16 +131,55 @@ export class AceAdapter {
         // TODO:
         throw new Error("未解決：複数の Delta が必要なパターン");
 
-      // d2 の範囲が d1 を含まない場合
+        // d2 の範囲が d1 を含まない場合
       } else {
         // d1 の開始位置が d2 の開始位置より前 / 同じ場合、d2 の位置を d1 の挿入文字分ずらす
         if (d1.start.row < d2.start.row || d1.start.row === d2.start.row && d1.start.column < d2.start.column) {
           const rowDelta = d1.lines.length - 1;
           d2.start.row += rowDelta;
           d2.end.row += rowDelta;
+
+          // d1 の終了位置が d2 の開始位置と同じ行にある場合、d2 の開始位置を 挿入文字列分ずらす
+          if(d1.end.row === d2.start.row) {
+            d2.start.column += d1.lines[d1.lines.length - 1].length;
+            d2.end.column += d1.lines[d1.lines.length - 1].length;
+          }
+
           return d2;
 
           // d1 の開始位置が d2 の終了位置と同じ / 後の場合、変換の必要はない
+        } else {
+          return d2;
+        }
+      }
+    }
+
+    // remove / insert
+    if (d1.action === "remove" && d2.action === "insert") {
+      // d1 の範囲が d2 を含む場合、d2 の開始位置を d1 の開始位置に合わせる
+      if (this.isDeltaIncludePosition(d2, d1.start)) {
+        const d = this.calcMoveDelta(d2.start, d1.start);
+        d2.start = d1.start;
+        d2.end = this.calcMovedPosition(d2.end, d);
+        return d2;
+
+        // d2 の範囲が d1 を含まない場合
+      } else {
+        // d2 より後に d1 の開始位置がある場合、d2 の位置を d1 の削除文字分ずらす
+        if (d1.start.row > d2.end.row) {
+          const rowDelta = d1.lines.length - 1;
+          d2.start.row -= rowDelta;
+          d2.end.row -= rowDelta;
+
+          // d1 の終了位置が d2 の開始位置と同じ行にある場合は、最終行の挿入文字数分列をずらす
+          if (d1.end.row === d2.start.row) {
+            d2.start.column += d1.lines[d1.lines.length - 1].length;
+            d2.end.column += d1.lines[d1.lines.length - 1].length;
+          }
+
+          return d2;
+
+        // d2 より前に d1 の開始位置がある場合、変換の必要はない
         } else {
           return d2;
         }
