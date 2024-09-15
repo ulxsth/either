@@ -80,47 +80,70 @@ export class AceAdapter {
   };
 
   /**
-   * 他者が変更した差分を受け取り、最新の変更に対して競合しないように変換して返す。
-   * @param {*} targetDelta 対象の差分
+   * 差分を受け取り、最新の変更に対して競合しないように変換して返す。
+   * @param {*} d2 対象の差分
    * @returns delta 競合しないように変換された差分
    */
-  transform(targetDelta) {
-    const latestDelta = this.deltas.pop();
+  transform(d2) {
+    const d1 = this.deltas.pop();
 
     // insert / insert
-    if (latestDelta.action === "insert" && targetDelta.action === "insert") {
-      // latest より後の行の場合、latest が追加する行の分開始位置の行をずらす
-      if (latestDelta.start.row < targetDelta.start.row) {
-        const rowDelta = latestDelta.lines.length - 1;
-        targetDelta.start.row += rowDelta;
-        targetDelta.end.row += rowDelta;
-        return targetDelta;
+    if (d1.action === "insert" && d2.action === "insert") {
+      // d1 より後の行の場合、d1 が追加する行の分開始位置の行をずらす
+      if (d1.start.row < d2.start.row) {
+        const rowDelta = d1.lines.length - 1;
+        d2.start.row += rowDelta;
+        d2.end.row += rowDelta;
+        return d2;
 
-      // latest と同じ行の場合、編集する列を比較する必要がある
-      } else if (latestDelta.start.row === targetDelta.start.row) {
-        // latest より後の列の場合
-        // 行：latest が追加する行の分ずらす
+        // d1 と同じ行の場合、編集する列を比較する必要がある
+      } else if (d1.start.row === d2.start.row) {
+        // d1 より後の列の場合
+        // 行：d1 が追加する行の分ずらす
         // 列：改行しない場合は追加する列の分、する場合はそこから改行前の文字数分左に移動する必要がある
-        if (latestDelta.start.column < targetDelta.start.column) {
-          const rowDelta = latestDelta.lines.length - 1;
-          targetDelta.start.row += rowDelta;
-          targetDelta.end.row += rowDelta;
-          targetDelta.start.column += latestDelta.lines[0].length;
-          targetDelta.end.column += latestDelta.lines[0].length;
-          if (latestDelta.lines.length > 1) {
-            const columnDelta = targetDelta.start.column - latestDelta.start.column;
-            targetDelta.start.column -= columnDelta;
-            targetDelta.end.column -= columnDelta;
+        if (d1.start.column < d2.start.column) {
+          const rowDelta = d1.lines.length - 1;
+          d2.start.row += rowDelta;
+          d2.end.row += rowDelta;
+          d2.start.column += d1.lines[0].length;
+          d2.end.column += d1.lines[0].length;
+          if (d1.lines.length > 1) {
+            const columnDelta = d2.start.column - d1.start.column;
+            d2.start.column -= columnDelta;
+            d2.end.column -= columnDelta;
           }
 
-        // 編集する行が同じ / latest より前の列の場合、変換の必要はない
+          // 編集する列が同じ / d1 より前の列の場合、変換の必要はない
         } else {
-          return targetDelta;
+          return d2;
         }
 
-      // latest より前の行の場合、変換の必要はない
+        // d1 より前の行の場合、変換の必要はない
       } else {
-        return targetDelta;
+        return d2;
+      }
+    }
+
+    // insert / remove
+    if (d1.action === "insert" && d2.action === "remove") {
+      // d2 の範囲が d1 を含む場合
+      if (this.isDeltaIncludePosition(d2, d1.start)) {
+        // TODO:
+        throw new Error("未解決：複数の Delta が必要なパターン");
+
+      // d2 の範囲が d1 を含まない場合
+      } else {
+        // d1 の開始位置が d2 の開始位置より前 / 同じ場合、d2 の位置を d1 の挿入文字分ずらす
+        if (d1.start.row < d2.start.row || d1.start.row === d2.start.row && d1.start.column < d2.start.column) {
+          const rowDelta = d1.lines.length - 1;
+          d2.start.row += rowDelta;
+          d2.end.row += rowDelta;
+          return d2;
+
+          // d1 の開始位置が d2 の終了位置と同じ / 後の場合、変換の必要はない
+        } else {
+          return d2;
+        }
       }
     }
   }
@@ -159,14 +182,14 @@ export class AceAdapter {
    */
   hasDuplicate(delta1, delta2) {
     return (
-      delta1.start.row <= delta2.end.row &&
-      delta1.start.column <= delta2.end.column &&
-      delta1.end.row >= delta2.start.row &&
-      delta1.end.column >= delta2.start.column ||
-      delta2.start.row <= delta1.end.row &&
-      delta2.start.column <= delta1.end.column &&
-      delta2.end.row >= delta1.start.row &&
-      delta2.end.column >= delta1.start.column
+      delta1.start.row < delta2.end.row &&
+      delta1.start.column < delta2.end.column &&
+      delta1.end.row > delta2.start.row &&
+      delta1.end.column > delta2.start.column ||
+      delta2.start.row < delta1.end.row &&
+      delta2.start.column < delta1.end.column &&
+      delta2.end.row > delta1.start.row &&
+      delta2.end.column > delta1.start.column
     );
   }
 
@@ -177,10 +200,10 @@ export class AceAdapter {
    */
   isDeltaIncludePosition(delta, pos) {
     return (
-      delta.start.row <= pos.row &&
-      delta.start.column <= pos.column &&
-      delta.end.row >= pos.row &&
-      delta.end.column >= pos.column
+      delta.start.row < pos.row &&
+      delta.start.column < pos.column &&
+      delta.end.row > pos.row &&
+      delta.end.column > pos.column
     );
   }
 
@@ -192,10 +215,10 @@ export class AceAdapter {
    */
   isDeltaIncludeDelta(delta1, delta2) {
     return (
-      delta1.start.row <= delta2.start.row &&
-      delta1.start.column <= delta2.start.column &&
-      delta1.end.row >= delta2.end.row &&
-      delta1.end.column >= delta2.end.column
+      delta1.start.row < delta2.start.row &&
+      delta1.start.column < delta2.start.column &&
+      delta1.end.row > delta2.end.row &&
+      delta1.end.column > delta2.end.column
     );
   }
 
