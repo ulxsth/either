@@ -1,29 +1,22 @@
-import { Socket } from "socket.io";
-import { TextOperation } from "./TextOperation";
+import { Server, Socket } from "socket.io";
 
 export class EditorSocketIOServer {
-  constructor(
-    public channelId: string,
-    public document: string,
-    public operations: TextOperation[]
-  ) {}
+  private document = "";
+  private deltas: AceAjax.Delta[] = [];
+  private revision = 0;
 
-  public addClient(socket: Socket) {
-    socket.join(this.channelId)
-    socket.emit("init", {
-      document: this.document,
-      revision: this.operations.length
+  constructor(public io: Server) {
+    io.on("connection", (socket: Socket) => {
+      console.log("A user connected: ", socket.id);
+      socket.emit("init", { document: this.document, revision: this.revision })
+
+      socket.on("change", (data) => {
+        const { document: newDoc, delta, revision } = data
+        this.document = newDoc
+        this.deltas.push(delta)
+        console.log("change: ", delta.lines.join("\n"), revision)
+        socket.broadcast.emit("change", data)
+      })
     })
-    socket.on("operation", () => this.onOperation(socket))
-    socket.on("disconnect", () => this.onDisconnect(socket))
-  }
-
-  public onOperation(socket: Socket) {
-    
-  }
-  public onDisconnect(socket: Socket) {
-    console.log("A user disconnected: ", socket.id);
-
-    socket.leave(this.channelId)
   }
 }
