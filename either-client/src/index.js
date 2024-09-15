@@ -139,8 +139,8 @@ export class AceAdapter {
           d2.start.row += rowDelta;
           d2.end.row += rowDelta;
 
-          // d1 の終了位置が d2 の開始位置と同じ行にある場合、d2 の開始位置を 挿入文字列分ずらす
-          if(d1.end.row === d2.start.row) {
+          // d1 の終了位置が d2 の開始位置と同じ行にある場合、d2 の開始位置を 挿入行分ずらす
+          if (d1.end.row === d2.start.row) {
             d2.start.column += d1.lines[d1.lines.length - 1].length;
             d2.end.column += d1.lines[d1.lines.length - 1].length;
           }
@@ -165,8 +165,8 @@ export class AceAdapter {
 
         // d2 の範囲が d1 を含まない場合
       } else {
-        // d2 より後に d1 の開始位置がある場合、d2 の位置を d1 の削除文字分ずらす
-        if (d1.start.row > d2.end.row) {
+        // d2 より後 / 同じ行に d1 の開始位置がある場合、d2 の位置を d1 の削除行分ずらす
+        if (d1.start.row > d2.end.row || d1.start.row === d2.end.row && d1.start.column > d2.end.column) {
           const rowDelta = d1.lines.length - 1;
           d2.start.row -= rowDelta;
           d2.end.row -= rowDelta;
@@ -179,7 +179,52 @@ export class AceAdapter {
 
           return d2;
 
-        // d2 より前に d1 の開始位置がある場合、変換の必要はない
+          // d2 より前に d1 の開始位置がある場合、変換の必要はない
+        } else {
+          return d2;
+        }
+      }
+    }
+
+    if (d1.action === "remove" && d2.action === "remove") {
+      // d1 と d2 がまったく同一か、 d1 が d2 を包括する場合、何もしないd2を返す
+      if (JSON.stringify(d1) === JSON.stringify(d2) || this.isDeltaIncludeDelta(d1, d2)) {
+        d2.action = "insert";
+        d2.end = d2.start;
+        d2.lines = [""];
+        return d2;
+      }
+
+      // d1 と d2 が重複している（ただし、最低でもどちらかが独立する集合を持つ）場合
+      if (this.hasDuplicate(d1, d2)) {
+        // d1 の開始位置が d2 の開始位置より前にある場合、d2 の開始位置を d1 の終了位置へずらす
+        if (d1.start.row > d2.start.row || d1.start.row === d2.start.row && d1.start.column > d2.start.column) {
+          d2.start = d1.end;
+          return d2;
+
+          // d1 の終了位置が d2 の終了位置より後にある場合、d2 の終了位置を d1 の開始位置へずらす
+        } else if (d1.end.row < d2.end.row || d1.end.row === d2.end.row && d1.end.column < d2.end.column) {
+          d2.end = d1.start;
+          return d2;
+        }
+
+
+        // d1 と d2 が重複していない場合
+      } else {
+        // d1 が d2 より前の場合、d1 の削除行分上にずらす
+        if (d1.end.row < d2.start.row || d1.end.row === d2.start.row && d1.end.column <= d2.start.column) {
+          const rowDelta = d1.lines.length - 1;
+          d2.start.row -= rowDelta;
+          d2.end.row -= rowDelta;
+
+          // d1 の終了位置が d2 の開始位置と同じ行にある場合、
+          // d2 の開始位置を d1 の削除文字分左へ移動させ、d1 の開始位置の残存文字分右へ移動させる
+          if (d1.end.row === d2.start.row) {
+            d2.start.column -= d1.lines[d1.lines.length - 1].length;
+            d2.start.column += d1.start.column;
+          }
+
+          // d1 が d2 より後の場合、変換の必要はない
         } else {
           return d2;
         }
