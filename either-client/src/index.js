@@ -70,13 +70,14 @@ export class AceAdapter {
       this.editor.session.doc.applyDeltas([delta]);
       deltas.push(delta);
       this.revision++;
+      this.editor.moveCursorTo(delta.end);
     });
     this.isSystemChange = false;
   };
 
   /**
    * 差分を受け取り、最新の変更に対して競合しないように変換して返す。
-   * @param {*} d2 対象の差分
+   * @param {AceAjax.Delta} d2 対象の差分
    * @returns delta 競合しないように変換された差分
    */
   transform(d2) {
