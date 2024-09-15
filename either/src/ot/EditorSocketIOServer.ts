@@ -20,7 +20,7 @@ export class EditorSocketIOServer {
 
   public onOperation(socket: Socket) {
     
-   }
+  }
   public onDisconnect(socket: Socket) {
     console.log("A user disconnected: ", socket.id);
 
