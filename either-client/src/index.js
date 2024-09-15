@@ -18,7 +18,7 @@ export class AceAdapter {
       socket.emit("change", {
         document: editor.session.getValue(),
         delta,
-        revision: ++this.revision
+        revision: this.revision
       });
     });
 
@@ -41,7 +41,9 @@ export class AceAdapter {
       console.log(data);
       const { delta, revision: receiveRevision } = data;
       if (this.revision === receiveRevision) {
-        const [delta1, delta2] = this.transform(delta, this.deltas.pop());
+        const latestDelta = this.deltas.pop()
+        console.log(`conflict detected: ${latestDelta} / ${delta}`);
+        const [delta1, delta2] = this.transform(delta, latestDelta);
         if (delta1) {
           this.applyDeltas([delta1]);
         }
@@ -52,6 +54,10 @@ export class AceAdapter {
         this.applyDeltas([delta]);
       }
     });
+
+    socket.on("ack", (_) => {
+      this.revision++;
+    })
   }
 
 
@@ -63,7 +69,6 @@ export class AceAdapter {
       }
       this.editor.session.doc.applyDeltas([delta]);
       deltas.push(delta);
-      this.revision++;
     });
     this.isSystemChange = false;
   };

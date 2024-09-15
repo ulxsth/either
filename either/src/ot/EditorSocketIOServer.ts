@@ -15,7 +15,9 @@ export class EditorSocketIOServer {
         this.document = newDoc
         this.deltas.push(delta)
         console.log("change: ", delta.lines.join("\n"), revision)
+
         socket.broadcast.emit("change", data)
+        socket.emit("ack")
       })
     })
   }
