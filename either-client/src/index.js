@@ -47,13 +47,8 @@ export class AceAdapter {
       const latestDelta = this.deltas.pop()
       if (latestDelta && this.revision === receiveRevision) {
         console.log(`conflict detected: ${latestDelta.action} / ${delta.action}`);
-        const [delta1, delta2] = this.transform(delta, latestDelta);
-        if (delta1) {
-          this.applyDeltasAndAddRevision([delta1]);
-        }
-        if (delta2) {
-          this.applyDeltasAndAddRevision([delta2]);
-        }
+        const newDelta = this.transform(delta);
+        this.applyDeltasAndAddRevision([newDelta]);
       } else {
         this.applyDeltasAndAddRevision([delta]);
       }
