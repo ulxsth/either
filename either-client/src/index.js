@@ -49,13 +49,13 @@ export class AceAdapter {
         console.log(`conflict detected: ${latestDelta.action} / ${delta.action}`);
         const [delta1, delta2] = this.transform(delta, latestDelta);
         if (delta1) {
-          this.applyDeltas([delta1]);
+          this.applyDeltasAndAddRevision([delta1]);
         }
         if (delta2) {
-          this.applyDeltas([delta2]);
+          this.applyDeltasAndAddRevision([delta2]);
         }
       } else {
-        this.applyDeltas([delta]);
+        this.applyDeltasAndAddRevision([delta]);
       }
     });
 
@@ -66,7 +66,7 @@ export class AceAdapter {
   }
 
 
-  applyDeltas = (deltas) => {
+  applyDeltasAndAddRevision = (deltas) => {
     this.isSystemChange = true;
     deltas.forEach((delta) => {
       if (!delta) {
@@ -74,6 +74,7 @@ export class AceAdapter {
       }
       this.editor.session.doc.applyDeltas([delta]);
       deltas.push(delta);
+      this.revision++;
     });
     this.isSystemChange = false;
   };
