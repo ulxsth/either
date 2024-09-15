@@ -6,6 +6,10 @@ export class AceAdapter {
     this.isSystemChange = false;
     this.deltas = [];
 
+    setInterval(() => {
+      console.log(`Current revision: ${this.revision}`);
+    }, 5000);
+
     // イベントの発信
     editor.session.on('change', (delta) => {
       if (this.isSystemChange) {
